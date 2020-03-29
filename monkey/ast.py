@@ -62,6 +62,14 @@ class IntegerLiteral(Node):
         return str(self.value)
 
 
+class StringLiteral(Node):
+    value: str = None
+
+    def __init__(self, token, value):
+        super().__init__(token)
+        self.value = value
+
+
 class Boolean(Node):
     value = None
 

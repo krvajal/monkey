@@ -1,14 +1,16 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Callable
 
 from monkey import ast
 
 INTEGER_OBJ = "INTEGER"
+STRING_OBJ = "STRING"
 BOOLEAN_OBJ = "BOOLEAN"
 NULL_OBJ = "NULL"
 RETURN_VALUE_OBJ = "RETURN_VALUE"
 ERROR_OBJ = "ERROR"
 FUNCTION_OBJ = "FUNCTION"
+BUILTIN_OBJ = "BUILTIN"
 
 
 class Obj:
@@ -21,6 +23,11 @@ class Integer(Obj):
     value: int = None
     object_type = INTEGER_OBJ
 
+
+@dataclass
+class String(Obj):
+    value: str = None
+    object_type = STRING_OBJ
 
 @dataclass
 class Boolean(Obj):
@@ -75,3 +82,9 @@ class Function:
     parameters: List[ast.Identifier] = None
     body: ast.BlockStatement = None
     env: Environment = None
+
+
+@dataclass
+class Builtin:
+    object_type = BUILTIN_OBJ
+    fn: Callable = None

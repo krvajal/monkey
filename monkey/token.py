@@ -5,6 +5,8 @@ ILLEGAL = "ILLEGAL"
 IDENT = "IDENT"
 # integer
 INT = "INT"
+# string
+STRING = "STRING"
 
 ASSIGN = "="
 EQ = "=="

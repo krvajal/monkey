@@ -1,6 +1,6 @@
 from monkey.ast import Program, LetStatement, Identifier, ReturnStatement, ExpressionStatement, IntegerLiteral, \
     PrefixExpression, InfixExpression, Boolean, IfExpression, BlockStatement, FunctionLiteral, Expression, \
-    CallExpression
+    CallExpression, StringLiteral
 from monkey import token
 
 
@@ -117,6 +117,11 @@ def parse_call_expression(parser, function: Expression):
 
     return exp
 
+def parse_str_literal(parser):
+    value = str(parser.curr_token.literal)
+    lit = StringLiteral(parser.curr_token, value)
+    return lit
+
 
 class Parser:
     peek_token = None
@@ -139,7 +144,7 @@ class Parser:
         self.register_prefix(token.LPAREN, parse_grouped_expr)
         self.register_prefix(token.IF, parse_if_expr)
         self.register_prefix(token.FUNCTION, parse_fun_expr)
-
+        self.register_prefix(token.STRING, parse_str_literal)
 
         self.register_infix(token.PLUS, parse_infix_expression)
         self.register_infix(token.MINUS, parse_infix_expression)

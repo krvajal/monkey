@@ -23,6 +23,20 @@ def test_eval_integer_expression():
         integer_object_test(evaluated, test.get("expected"))
 
 
+def test_str_literal():
+    input = '"Hello World!"'
+    evaluated = eval_test(input)
+    assert type(evaluated) == object.String, "object is not String, got={}".format(evaluated.object_type)
+    assert evaluated.value == "Hello World!"
+
+
+def test_string_concatenation():
+    input = '"Hello" + " "  + "World!"'
+    evaluated = eval_test(input)
+    assert type(evaluated) == object.String, "object is not String, got={}".format(evaluated.object_type)
+    assert evaluated.value == "Hello World!"
+
+
 def test_eval_boolean_expression():
     tests = [
         {"input": "true", "expected": True},
@@ -105,6 +119,18 @@ def test_return_statements():
         integer_object_test(evaluated, test.get('expected'))
 
 
+def test_builtin_functions():
+    tests = [
+        {"input": 'len("")', "expected": 0},
+        {"input": 'len("four")', "expected": 4},
+        {"input": 'len("hello world")', "expected": 11},
+    ]
+
+    for test in tests:
+        evaluated = eval_test(test.get("input"))
+        integer_object_test(evaluated, test.get('expected'))
+
+
 def test_error_handling():
     tests = [
         {"input": "5 + true", "expected": "type mismatch: INTEGER + BOOLEAN"},
@@ -119,21 +145,28 @@ def test_error_handling():
             return true + false;
           }
         return 1; }
-        """, "expected": "unknown operator: BOOLEAN + BOOLEAN"},
-        {"input": """
+        """,
+         "expected": "unknown operator: BOOLEAN + BOOLEAN"},
+        {
+            "input": """
            if (10 > 1) {
              if (10 > 1) {
                true + false;
                2;
              }
            return 1; }
-           """, "expected": "unknown operator: BOOLEAN + BOOLEAN"},
-    ]
+           """,
+            "expected": "unknown operator: BOOLEAN + BOOLEAN",
+        },
+        {
+            "input": '"Hello" - "World"',
+            "expected": "unknown operator: STRING - STRING"
+        }]
 
     for test in tests:
         evaluated = eval_test(test.get("input"))
-        assert type(evaluated) is object.Error, "not error object returned"
-        assert evaluated.message == test.get('expected'), "wrong error message"
+    assert type(evaluated) is object.Error, "not error object returned"
+    assert evaluated.message == test.get('expected'), "wrong error message"
 
 
 def test_let_statement():

@@ -1,6 +1,7 @@
 from typing import List
 
 from monkey import ast, object
+from monkey.builtins import builtins
 
 
 def eval(node: ast.Node, env: object.Environment):
@@ -15,6 +16,8 @@ def eval(node: ast.Node, env: object.Environment):
         env.set(node.name.value, val)
     elif type(node) is ast.Identifier:
         return eval_identifier(node, env)
+    elif type(node) is ast.StringLiteral:
+        return object.String(value=node.value)
     elif type(node) is ast.FunctionLiteral:
         parameters = node.parameters
         body = node.body
@@ -23,7 +26,7 @@ def eval(node: ast.Node, env: object.Environment):
         fun = eval(node.function, env)
         if is_error(fun):
             return fun
-        args = eval_expressions(node.arguments,env)
+        args = eval_expressions(node.arguments, env)
         if len(args) == 1 and is_error(args[0]):
             return args[0]
         return apply_function(fun, args)
@@ -100,9 +103,18 @@ def eval_minus_prefix_operator_expression(right):
         return object.Integer(value=-right.value)
 
 
+def eval_string_infix_expression(operator, left, right):
+    if operator is not "+":
+        return object.Error("unknown operator: {} {} {}".format(left.object_type, operator, right.object_type))
+        # use python string concat underneath
+    return object.String(value=left.value + right.value)
+
+
 def eval_infix_expression(operator, left, right):
     if type(left) is object.Integer and type(right) is object.Integer:
         return eval_integer_infix_expression(operator, left, right)
+    if type(left) is object.String and type(right) is object.String:
+        return eval_string_infix_expression(operator, left, right)
     elif operator == '==':
         return native_bool_to_boolean_object(left == right)
     elif operator == '!=':
@@ -139,9 +151,13 @@ def eval_integer_infix_expression(operator, left, right):
 
 def eval_identifier(node: ast.Identifier, env: object.Environment):
     val = env.get(node.value)
-    if val is None:
-        return object.Error("identifier not found: {}".format(node.token.literal))
-    return val
+    if val is not None:
+        return val
+
+    if node.value in builtins:
+        return builtins[node.value]
+
+    return object.Error("identifier not found: {}".format(node.token.literal))
 
 
 def native_bool_to_boolean_object(val):
@@ -182,14 +198,15 @@ def eval_expressions(expressions: List[ast.Expression], env):
 
 
 def apply_function(fun, arguments):
-    if type(fun) is not object.Function:
-        return object.Error("not a function")
-
-    extended_env = extend_function_env(fun, arguments)
-    evaluated = eval(fun.body, extended_env)
-    if type(evaluated) is object.ReturnValue:
-        return evaluated.value
-    return evaluated
+    if type(fun) is object.Function:
+        extended_env = extend_function_env(fun, arguments)
+        evaluated = eval(fun.body, extended_env)
+        if type(evaluated) is object.ReturnValue:
+            return evaluated.value
+        return evaluated
+    elif type(fun) is object.Builtin:
+        return fun.fn(*arguments)
+    return object.Error("not a function")
 
 
 def extend_function_env(fun: object.Function, arguments: List[ast.Expression]):

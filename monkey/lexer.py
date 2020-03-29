@@ -27,7 +27,11 @@ class Lexer:
         # eat all the whitespace
         self._skip_whitespace()
 
-        if self.ch == '=':
+        if self.ch == '"':
+            literal = self.read_string()
+            tok = token.Token(token.STRING, literal)
+
+        elif self.ch == '=':
             if self._peek_char() == "=":
                 self.read_char()
                 tok = token.Token(token.EQ, "==")
@@ -115,3 +119,11 @@ class Lexer:
         if self.readPosition >= len(self.input):
             return 0
         return self.input[self.readPosition]
+
+    def read_string(self):
+        position = self.position + 1
+        while True:
+            self.read_char()
+            if self.ch == '"' or self.ch == 0:
+                break
+        return self.input[position:self.position]
