@@ -117,6 +117,7 @@ def parse_call_expression(parser, function: Expression):
 
     return exp
 
+
 class Parser:
     peek_token = None
     curr_token = None
